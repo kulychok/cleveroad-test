@@ -119,4 +119,34 @@ router.get('/me', async (request, response) => {
 	}
 });
 
+router.get('/items', async (request, response) => {
+	try {
+		const query = `SELECT items.id, items.created_at, items.title, items.price, items.image, items.user_id, users.email, users.id AS "userId", users.name, users.phone FROM items JOIN users ON users.id = items.user_id`;
+		connection.query(query, (error, result) => {
+			if (error) {
+				response.status(500).json(error);
+			} else if (!result.length) {
+				response.status(401).json({});
+			} else {
+				result = result.map((el) => {
+					el.user = {
+						id: el.userId,
+						phone: el.phone,
+						name: el.name,
+						email: el.email,
+					};
+					delete el.userId;
+					delete el.phone;
+					delete el.name;
+					delete el.email;
+					return el;
+				});
+				response.status(200).json(result);
+			}
+		});
+	} catch (error) {
+		response.status(500).json({ message: error.message });
+	}
+});
+
 module.exports = router;
