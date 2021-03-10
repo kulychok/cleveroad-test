@@ -96,4 +96,27 @@ router.post('/register', async (request, response) => {
 	}
 });
 
+router.get('/me', async (request, response) => {
+	try {
+		const headers = request.headers;
+
+		const query = `SELECT \`id\`, \`email\`, \`phone\`, \`name\` FROM \`users\` WHERE \`token\` = "${headers.authorization}"`;
+		connection.query(query, (error, result) => {
+			if (error) {
+				response.status(500).json(error);
+			} else if (!result.length) {
+				response.status(401).json({});
+			} else
+				response.status(200).json({
+					id: result[0].id,
+					email: result[0].email,
+					name: result[0].name,
+					phone: result[0].phone,
+				});
+		});
+	} catch (error) {
+		response.status(500).json({ message: error.message });
+	}
+});
+
 module.exports = router;
